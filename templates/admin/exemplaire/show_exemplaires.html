@@ -1,0 +1,50 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+    <div class="row">
+        <a href="/admin/exemplaire/add?id_oeuvre={{ oeuvre.id_oeuvre }}">
+            Ajouter un Exemplaire de cette Oeuvre</a>
+
+        <h4>information sur l'oeuvre :  titre: <strong style='color: green'>{{ oeuvre.titre }}
+            </strong> auteur :<strong style='color: green'> {{ oeuvre.nom }}
+            </strong> dateParution   :<strong style='color: green'>
+                {{ oeuvre.date_parution }}
+            </strong><br> </h4>
+        <h2>informations : nombre d'exemplaire(s): {{ oeuvre.nb_exemplaire }}, présent(s) : {{ oeuvre.nb_exemp_dispo }} <br> </h2>
+
+        <table>
+            <caption>Recapitulatifs des Exemplaires</caption>
+            {% if oeuvre.nbExemplaire != 0 %}
+                <thead>
+                <tr><th>N° exemplaire</th><th>etat</th><th>date Achat</th><th>prix</th>
+                <th>opérations</th></tr>
+                </thead>
+                <tbody>
+                {% for exemplaire in exemplaires %}
+                    <tr {% if exemplaire.present == 'present' %} style="background-color: chartreuse"{% endif %}  >
+                        <td >
+                            {{ exemplaire.id_exemplaire }}  ( {{ exemplaire.present }})
+                    </td>
+                    <td>
+                        {{ exemplaire.etat }}
+                    </td>
+                    <td>
+                        {{ exemplaire.date_achat.strftime('%d-%m-%Y') }}
+                    </td><td>
+                        {{ exemplaire.prix }}
+                    </td>
+                    <td>
+                        <a href="/admin/exemplaire/edit?id_exemplaire={{ exemplaire.id_exemplaire }}">modifier</a>&nbsp;
+                        <a href="/admin/exemplaire/delete?id_exemplaire={{ exemplaire.id_exemplaire }}">supprimer</a>
+                    </td>
+                    </tr>
+                {%  endfor %}
+            {% else %}
+                <tr>
+                    <td> pas d'Exemplaire dans la base de données</td>
+                </tr>
+            {% endif %}
+            <tbody>
+        </table>
+    </div>
+{% endblock %}

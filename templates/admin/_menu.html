@@ -1,0 +1,41 @@
+<nav class="top-bar" data-topbar role="navigation">
+    <ul class="title-area">
+        <li class="name">
+            <h1> <a href="">TP web</a></h1>
+        </li>
+        <li class="toggle-topbar menu-icon">
+            <a href="#"><span>Menu</span></a>
+        </li>
+    </ul>
+    <section class="top-bar-section">
+        <ul class="left">
+
+            <li class="has-dropdown"><a href="#">gestion des emprunts</a>
+                <ul class="dropdown">
+                    <li><a href="/admin/emprunt/adherent-select?action=emprunter">Emprunter des livres </a></li>
+                    <li><a href="/admin/emprunt/adherent-select?action=rendre">Rendre des livres </a></li>
+                    <li><a href="/admin/emprunt/delete">Supprimer des emprunts</a></li>
+                    <li><a href="/admin/emprunt/bilan-retard">Consulter les retards</a></li>
+                </ul>
+            </li>
+            <li class="divider"></li>
+            <li class="has-dropdown"><a href="#">gestion des oeuvres et auteurs</a>
+                <ul class="dropdown">
+                    <li><a href="/admin/oeuvre/show">Gestion des Oeuvres et de leurs exemplaires </a></li>
+                    <li><a href="/admin/auteur/show">afficher/editer/supprimer  des auteurs </a></li>
+                </ul>
+            </li>
+
+            <li class="has-dropdown"><a href="#">gestion des adherents</a>
+                <ul class="dropdown">
+                    <li><a href="/admin/adherent/show">afficher/editer/supprimer des adherents </a></li>
+
+                </ul>
+            </li>
+        </ul>
+        <ul class="right">
+            <li><a href="/admin/base/init">init base</a></li>
+        </ul>
+    </section>
+</nav>
+

@@ -1,0 +1,37 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+
+    <div class="row" >
+        <a href="/admin/auteur/add"> Ajouter un Auteur </a><br>
+        <table border="2">
+            <caption>Recapitulatif des Auteurs</caption>
+            <thead>
+            <tr><th>nom</th><th>prenom</th><th>nombre d'oeuvres</th><th>opérations</th></tr>
+            </thead>
+            <tbody>
+            {%  if auteurs | length >= 1 %}
+            {% for auteur in auteurs %}
+            <tr><td>
+                    {{ auteur.nom }}
+                </td><td>
+                    {{ auteur.prenom }}
+                </td><td>
+                    {{ auteur.nbrOeuvre }}
+                </td>
+                <td>
+                    <a href="/admin/auteur/edit?id={{auteur.id_auteur}}">modifier</a>
+                    <a href="/admin/auteur/delete?id={{auteur.id_auteur}}">supprimer</a>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td> pas d'auteur dans la base de données</td>
+            </tr>
+            {% endif %}
+            <tbody>
+        </table>
+    </div>
+
+{% endblock %}

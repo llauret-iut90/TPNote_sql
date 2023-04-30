@@ -1,0 +1,79 @@
+{% extends "admin/layout.html" %}
+
+
+{% block content %}
+
+    <div class="row">
+        <form action="/admin/emprunt/delete" method="post" >
+            <input type="submit" name="validerDeleteAll" id="valider" value="supprimer" class="button radius">
+            tout sélectionner ? <input type="checkbox" onclick="toggle(this);" /><br />
+
+
+            <label>Adherent : {{ idAdherent }}
+                <select name="id_adherent"  id="id_adherent" onchange="self.location='/admin/emprunt/delete?id_adherent='+this.options[this.selectedIndex].value">
+                    {% if id_adherent is not defined or id_adherent !="" %}
+                    <option value="">Tous les adhérents</option>
+                    {% endif %}
+                    {% for donnees_adherent in donnees_adherents %}
+                    <option value="{{ donnees_adherent.id_adherent }}"
+                            {% if id_adherent is defined and id_adherent == donnees_adherent.id_adherent %}selected{% endif %}
+                    >
+                    {{ donnees_adherent.nom }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <table border="2">
+                <caption>Recapitulatifs des Emprunts</caption>
+                {% if donnees | length > 0 %}
+                <thead>
+                <tr><th>nom Adherent</th><th>titre</th><th>date emprunt</th><th>dateRendu</th>
+                    <th>num. Ex.</th><th>nb. jours Empr.</th><th>supprimer</th></tr>
+                </thead>
+                <tbody>
+                {% for value in donnees %}
+                <tr><td>
+                        {{ value.nom }}
+                    </td><td>
+                        {{ value.titre }}
+                    </td><td>
+                        {{ value.date_emprunt  }}
+                    </td><td>
+                        {% if value.date_retour != None  %}{{ value.date_retour }}{% endif %}
+                    </td><td>
+                       {{ value.id_exemplaire }}
+                    </td>
+                    <td>
+                       {{ value.nb_jours_emprunt }}
+                    </td>
+                    <td>
+                        {% set idEmprunt = value.id_adherent ~ '_'~value.id_exemplaire ~ '_' ~ value.date_emprunt %}
+                        {#{{ idEmprunt }}#}
+                        <input type="checkbox" name="select_emprunt" value="{{ idEmprunt }}">
+                    </td>
+                </tr>
+                <tbody>
+                {% else %}
+                <tr>
+                    <td> pas d'Emprunt dans la base de données</td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </table>
+        </form>
+    <a href="/admin/emprunt/delete">annuler</a>
+    </div>
+    <script>
+        function toggle(source) {
+            var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i] != source)
+                    checkboxes[i].checked = source.checked;
+            }
+        }
+
+    </script>
+
+
+{% endblock %}

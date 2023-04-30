@@ -1,0 +1,47 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+    <div class="row">
+        <table>
+            <caption>Recapitulatif des Emprunts non rendus</caption>
+            {% if donnees_bilan is defined %}
+
+            <thead>
+            <tr><th>nom Adherent</th><th>titre</th><th>date emprunt</th>
+                <th>Exemplaires</th><th>retard (jours)</th><th>pénalités</th></tr>
+            </thead>
+            <tbody>
+            {% for value in donnees_bilan %}
+
+                <tr  {% if value.flag_penalite == 1 %} style="background-color:red"  {% else %} style="background-color:orange" {% endif %} >
+
+                    <td>
+                        {{ value.nom }}
+                    </td><td>
+                        {{ value.titre }}
+                    </td><td>
+                        {{ value.date_emprunt.strftime('%d-%m-%Y') }}
+                    </td>
+                    </td><td>
+                        {{ value.id_exemplaire }}
+                    </td>
+                    <td>
+                        {{ value.retard }}
+                    </td>
+                    <td>
+                        {% if value.flag_penalite %} {{ value.dette }}  {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            <tbody>
+            {% else %}
+                <tr>
+                    <td> pas d'Emprunt dans la base de données</td>
+                </tr>
+            {% endif %}
+        </table>
+        <br><br>
+
+        <a href="">Publipostage aux adhérents en retard</a>
+    </div>
+{% endblock %}

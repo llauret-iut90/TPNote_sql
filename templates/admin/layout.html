@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/img/favicon.ico')}}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>projet S2</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/foundation.css')}}" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='assets/css/style.css')}}" />
+    <script src="{{ url_for('static', filename='assets/js/vendor/modernizr.js')}}"></script>
+</head>
+<body>
+{% include('admin/_menu.html') %}
+
+<br>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for categorie, message in messages %}
+        <div data-alert class="alert-box {{ categorie }}">
+               Information : <strong>{{ message }}</strong>
+        </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="grid-container grid-container-padded">
+    <div class="grid-x grid-margin-x">
+        <div class="large-12 cell">
+
+            {% block content %}
+                <h1> projet biblio</h1>
+            {% endblock %}
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='assets/js/vendor/jquery.js')}}"></script>
+<script src="{{ url_for('static', filename='assets/js/foundation.min.js')}}"></script>
+<script>
+    $(document).foundation();
+</script>
+</body>
+</html>

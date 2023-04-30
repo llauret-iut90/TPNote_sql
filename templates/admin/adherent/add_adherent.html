@@ -1,0 +1,31 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+    <div class="row ">
+        <form method="post" action="/admin/adherent/add">
+            <fieldset>
+                <legend>Ajouter un Adherent</legend>
+
+                <label>Nom
+                    <input name="nom"  type="text"  size="18" value="{{ donnees.nom }}" placeholder="2 caractères minimum"/>
+                </label>
+                {% if erreurs.nom is defined %}
+                    <small class="error">{{erreurs.nom}}</small>
+                {% endif %}
+
+                <label>Adresse</label>
+                <input name="adresse"  type="text"  size="18" value="{{ donnees.adresse }}"/>
+                {% if erreurs.adresse is defined %}
+                    <small class="error">{{erreurs.adresse}}</small>
+                {% endif %}
+
+                <label>date de paiement</label>
+                <input name="date_paiement"  type="text"  size="18" value="{{ donnees.date_paiement }}" placeholder="format jj/mm/aaaa"/>
+                {% if erreurs.date_paiement is defined %}
+                    <small class="error">{{erreurs.date_paiement}}</small>
+                {% endif %}
+
+                <input type="submit" name="validerForm" value="valider" />
+            </fieldset>
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+
+    <div class="row">
+        <fieldset>
+            {% if action == "emprunter" %}
+                <form method="post" action="/admin/emprunt/emprunter">
+            {% else %}
+                <form method="post" action="/admin/emprunt/rendre">
+            {% endif %}
+                    <h1>{{  action }} des livres</h1>
+                    <fieldset>
+                        <input type="hidden" name="action" value="{{ action }}">
+                        <legend>Sélectionner un Adhérent : </legend>
+                        <label>Adherent :
+                            <select name="id_adherent">
+                                {% if id_adherent is not defined or idAdherent == "" %}
+                                    <option value="">Saisir un adhérent</option>
+                                {% endif %}
+                                {% for donnees_adherent in donnees_adherents %}
+                                    <option value="{{ donnees_adherent.id_adherent }}"  >
+                                        {{ donnees_adherent.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </label>
+
+                        {% if erreurs.id_adherent is defined %}
+                            <small class="error">{{erreurs.id_adherent}}</small>
+                        {% endif %}
+                    </fieldset>
+                    <input type="submit" name="selectAdh" value="valider" />
+                </form>
+
+
+
+        </fieldset>
+                <a href="/">quitter</a>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+    <div class="row">
+        <form method="post" action="/admin/adherent/edit">
+            <fieldset>
+                <legend>Modifier un Adherent</legend>
+
+                <input name="id_adherent"  type="hidden" value="{{ donnees.id_adherent }}"/>
+
+                <label>Nom
+                    <input name="nom"  type="text"  size="18" value="{{ donnees.nom }}"/>
+                </label>
+                {% if erreurs.nom is defined %}
+                    <small class="error">{{erreurs.nom}}</small>
+                {% endif %}
+
+                <label>Adresse</label>
+                <input name="adresse"  type="text"  size="18" value="{{ donnees.adresse }}"/>
+                {% if erreurs.adresse is defined %}
+                    <small class="error">{{erreurs.adresse}}</small>
+                {% endif %}
+
+
+                <label>date de paiement</label>
+                <input name="date_paiement"  type="text"  size="18" value="{{ donnees.date_paiement }}"/>
+                {% if erreurs.date_paiement is defined %}
+                    <small class="error">{{erreurs.date_paiement}}</small>
+                {% endif %}
+
+                <input type="submit" name="validerForm" value="valider" />
+            </fieldset>
+        </form>
+    </div>
+{% endblock %}

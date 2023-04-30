@@ -1,0 +1,46 @@
+{% extends "admin/layout.html" %}
+
+
+{% block content %}
+
+    <div class="row">
+        <form method="post" action="/admin/exemplaire/add">
+
+                <fieldset>
+                    <legend>Ajouter un Exemplaire
+                    </legend>
+                    <h3>Titre: <strong style='color: brown'> {{ oeuvre.titre }} </strong>, Auteur :<strong style='color: blueviolet'> {{ oeuvre.nom }}</strong></h3>
+                    <label>Etat</label>
+                    <!--            <input name="etat"  type="text"  size="18" value="NEUF"/>'BON','MOYEN','MAUVAIS','NEUF'<br>-->
+
+                    <input type="radio" name="etat" value="NEUF" checked {% if exemplaire.etat == 'NEUF' %} checked {% endif %}>  NEUF -
+                    <input type="radio" name="etat" value="BON"   {% if exemplaire.etat == 'BON' %} checked {% endif %}> BON -
+                    <input type="radio" name="etat" value="MOYEN"  {% if exemplaire.etat == 'MOYEN' %} checked {% endif %}> MOYEN -
+                    <input type="radio" name="etat" value="MAUVAIS" {% if exemplaire.etat == 'MAUVAIS' %} checked {% endif %}> MAUVAIS <br>
+
+
+
+                    <label>Date Achat </label>
+                    <input name="date_achat"  type="text"  size="18" value="{{ exemplaire.date_achat }}" >
+                    {% if erreurs.date_achat is defined %}
+                        <small class="error">{{erreurs.date_achat}}</small>
+                    {% endif %}
+
+                    <label>Prix </label>
+                    <input name="prix"  type="text"  size="18" value="{{ exemplaire.prix }}"/>
+
+                    {% if erreurs.prix is defined %}
+                        <small class="error">{{erreurs.prix}}</small>
+                    {% endif %}
+
+                    <!-- champ caché avec l'id pour conserver la valeur de l'id lors de la validation !-->
+                    <input name="id_oeuvre"  type="hidden" value="{{ exemplaire.id_oeuvre }}"/>
+
+                    <input type="submit" name="AddExemplaire" value="Ajouter" />
+                </fieldset>
+
+
+         </form>
+    </div>
+
+{% endblock %}

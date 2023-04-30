@@ -1,0 +1,56 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+
+    <div class="row">
+        <form method="post" action="/admin/oeuvre/edit">
+            <fieldset>
+                <legend>Modifier une Oeuvre</legend>
+                <label>Titre
+                    <input name="titre"  type="text"  size="18" value="{{ donnees.titre }}"/>
+                </label>
+                {% if erreurs.titre is defined %}
+                    <small class="error">{{erreurs.titre}}</small>
+                {% endif %}
+                <label>date de parution
+                    <input name="date_parution"  type="text"  size="18" value="{{ donnees.date_parution }}"  placeholder="format jj/mm/aaaa"/>
+                </label>
+                {% if erreurs.date_parution is defined %}
+                    <small class="error">{{erreurs.date_parution}}</small>
+                {% endif %}
+
+
+               <label>Auteur {{ donnees.id_auteur }}</label>
+                    <select name="auteur_id" >
+                    {% for auteur in auteurs %}
+                          <option value="{{ auteur.id_auteur }}"
+                                {% if donnees.auteur_id is defined and auteur.id_auteur ==  donnees.auteur_id %}selected{% endif %}
+                            > {{ auteur.nom }} </option>
+                    {% endfor %}
+                    </select><br>
+                {% if erreurs.auteur_id is defined %}
+                    <small class="error">{{erreurs.auteur_id}}</small>
+                {% endif %}
+
+                <label>photo
+                    <input name="photo"  type="text"  size="18" value="{{ donnees.photo }}" placeholder="image dans le dossier static/assets/images (livre.jpg)"/>
+                </label>
+                {% if erreurs.photo is defined %}
+                    <small class="error">{{erreurs.photo}}</small>
+                {% endif %}
+                <input name="id_oeuvre"  type="hidden" value="{{ donnees.id_oeuvre }}"/>
+
+                <input type="submit" name="UpdateOeuvre" value="Modifier" class="button radius"/>
+            </fieldset>
+        </form>
+        {% if erreurs.photo is defined %}
+                    <img style="width:150px;height:200px" src="{{ url_for('static', filename='assets/images/no_photo.jpeg')}}" alt="pas de photo" >
+                {% else %}
+                    {% if donnees.photo is not none and donnees.photo != '' %}
+                        <img style="width:150px;height:150px" src="{{ url_for('static', filename = 'assets/images/' + donnees.photo) }}" alt="image de {{ donnees.titre }}" >
+                    {% else %}
+                        <img style="width:150px;height:150px" src="{{ url_for('static', filename='assets/images/no_photo.jpeg')}}" alt="pas de photo" >
+                    {% endif %}
+        {% endif %}
+    </div>
+{% endblock %}

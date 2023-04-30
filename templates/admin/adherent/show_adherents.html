@@ -1,0 +1,44 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+    <div class="row" >
+        <a href="/admin/adherent/add"> Ajouter un Adherent </a>
+        <table border="2">
+            <caption>Recapitulatif des Adherents</caption>
+            <thead>
+            <tr><th>nom</th><th>adresse</th><th>date de Paiement</th><th>information(s)</th> <th>opérations</th></tr>
+            </thead>
+            <tbody>
+            {%  if adherents| length >= 1 %}
+                {% for adherent in adherents %}
+                    <tr><td>
+                            {{ adherent.nom }}
+                        </td><td>
+                            {{ adherent.adresse }}
+                        </td><td>
+                            {{ adherent.date_paiement.strftime('%d-%m-%Y')  }}
+                        </td>
+                        <td>
+                            {%  if adherent.nbr_emprunt>0 %}{{  adherent.nbr_emprunt }} emprunt(s) en cours<br>{% endif %}
+                            {%  if adherent.nbr_emprunt>0 and adherent.retard==1 %} <strong style="background-color:red">⚠</strong> <br>{% endif %}
+                            {%  if adherent.retard==1 %}
+                                <span style="color:red">paiement en retard depuis : {{ adherent.date_paiement_futur.strftime('%d-%m-%Y')}}</span><br>
+                            {% elif  adherent.retardProche==1 %}
+                                <span style="color:green">paiement à renouveler</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/admin/adherent/edit?id_adherent={{adherent.id_adherent}}">modifier</a>
+                            <a href="/admin/adherent/delete?id_adherent={{adherent.id_adherent}}">supprimer</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td> pas d'adherent dans la base de données</td>
+                </tr>
+            {% endif %}
+            <tbody>
+        </table>
+    </div>
+{% endblock %}

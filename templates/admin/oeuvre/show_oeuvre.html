@@ -1,0 +1,53 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+    <div class="row" >
+        <a href="/admin/oeuvre/add"> Ajouter un oeuvre </a>
+        <table>
+            <caption>Recapitulatifs des oeuvres</caption>
+            <thead>
+            <tr><th>nom de l'auteur</th><th>titre</th><th>date de parution</th><th>Nbr.</th>
+                <th>Nbr. dispo.</th><th>photo</th><th>Exemplaires</th><th>opérations</th></tr>
+            </thead>
+            <tbody>
+            {%  if oeuvres| length >= 1  %}
+            {% for oeuvre in oeuvres %}
+            <tr><td>
+                    {{ oeuvre.nom }}
+                </td><td>
+                    {{ oeuvre.titre }}
+
+                </td><td>
+                    {{ oeuvre.date_parution }}
+                </td><td>
+                    {{ oeuvre.nb_exemplaire }}
+                </td><td>
+                    {{ oeuvre.nb_exemp_dispo }}
+                </td>
+                <td>
+                    {%  if oeuvre.photo is not none and oeuvre.photo != '' %}
+                        <img  style="width:40px;height:40px"  src="{{ url_for('static', filename = 'assets/images/' + oeuvre.photo) }}"  alt="image  de {{ oeuvre.titre }}" >
+                    {% else %}
+                        <img style="width:40px;height:40px"  src="{{ url_for('static', filename='assets/images/no_photo.jpeg')}}"  alt="pas de photo" >
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="/admin/exemplaire/show?id_oeuvre={{oeuvre.id_oeuvre}}">Gérer les Exemplaires</a>
+                </td>
+
+                <td>
+                    <a href="/admin/oeuvre/edit?id_oeuvre={{oeuvre.id_oeuvre}}">modifier</a>
+                    <a href="/admin/oeuvre/delete?id_oeuvre={{oeuvre.id_oeuvre}}">supprimer</a>
+                </td>
+            </tr>
+{#            {% else %}
+            <tr>
+                <td> pas d'oeuvre dans la base de données</td>
+            </tr>#}
+
+            {% endfor %}
+            {% endif %}
+            <tbody>
+        </table>
+    </div>
+{% endblock %}
