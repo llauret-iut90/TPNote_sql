@@ -32,7 +32,7 @@ def show_exemplaire():
         NOT IN (SELECT emprunt.exemplaire_id FROM emprunt WHERE emprunt.date_retour IS NULL)
         WHERE oeuvre.id_oeuvre=%s
         GROUP BY oeuvre.id_oeuvre, auteur.nom, oeuvre.titre
-        ORDER BY auteur.nom ASC, oeuvre.titre ASC;'''
+        ORDER BY auteur.nom, oeuvre.titre;'''
     mycursor.execute(sql, (noOeuvre))
     oeuvre = mycursor.fetchone()
     sql = ''' SELECT exemplaire.id_exemplaire,
@@ -64,12 +64,21 @@ GROUP BY exemplaire.id_exemplaire, exemplaire.date_achat, exemplaire.etat, exemp
 def add_exemplaire():
     noOeuvre = request.args.get('noOeuvre', '')
     mycursor = get_db().cursor()
-    sql = ''' SELECT oeuvre.id_oeuvre, oeuvre.titre, oeuvre.date_parution, oeuvre.photo, auteur.nom AS nom, COUNT(exemplaire.id_exemplaire) AS nb_exemplaire, COUNT(emprunt.date_retour) AS nb_exemp_dispo 
-    FROM oeuvre 
-    INNER JOIN auteur ON oeuvre.auteur_id=auteur.id_auteur 
-    INNER JOIN exemplaire ON oeuvre.id_oeuvre=exemplaire.oeuvre_id 
-    LEFT JOIN emprunt ON exemplaire.id_exemplaire=emprunt.exemplaire_id 
-    WHERE oeuvre.id_oeuvre=%s '''
+    sql = ''' SELECT auteur.nom, oeuvre.titre, oeuvre.id_oeuvre, oeuvre.date_parution AS date_parution_iso
+        , COALESCE (oeuvre.photo, '') AS photo
+        , COUNT(E1.id_exemplaire) AS nb_exemplaire
+        , COUNT(E2.id_exemplaire) AS nb_exemp_dispo
+        , CONCAT(LPAD(CAST(DAY(oeuvre.date_parution)AS CHAR(2)),2,0),'/',LPAD(MONTH(oeuvre.date_parution), 2, '0'),'/', YEAR(oeuvre.date_parution)) 
+        AS date_parution
+        FROM oeuvre
+        JOIN auteur ON auteur.id_auteur = oeuvre.auteur_id
+        LEFT JOIN exemplaire AS E1 ON E1.oeuvre_id = oeuvre.id_oeuvre
+        LEFT JOIN exemplaire AS E2 ON E2.id_exemplaire = E1.id_exemplaire
+        AND E2.id_exemplaire
+        NOT IN (SELECT emprunt.exemplaire_id FROM emprunt WHERE emprunt.date_retour IS NULL)
+        WHERE oeuvre.id_oeuvre=%s
+        GROUP BY oeuvre.id_oeuvre, auteur.nom, oeuvre.titre
+        ORDER BY auteur.nom, oeuvre.titre; '''
     mycursor.execute(sql, (noOeuvre))
     oeuvre = mycursor.fetchone()
     date_achat = datetime.datetime.now().strftime("%d/%m/%Y")
@@ -111,7 +120,21 @@ def delete_exemplaire():
     mycursor = get_db().cursor()
     id = request.args.get('id', '')  # id de l'exemplaire
     tuple_delete = (id,)
-    sql = ''' SELECT 'requete4_9' FROM DUAL '''
+    sql = ''' SELECT auteur.nom, oeuvre.titre, oeuvre.id_oeuvre, oeuvre.date_parution AS date_parution_iso
+        , COALESCE (oeuvre.photo, '') AS photo
+        , COUNT(E1.id_exemplaire) AS nb_exemplaire
+        , COUNT(E2.id_exemplaire) AS nb_exemp_dispo
+        , CONCAT(LPAD(CAST(DAY(oeuvre.date_parution)AS CHAR(2)),2,0),'/',LPAD(MONTH(oeuvre.date_parution), 2, '0'),'/', YEAR(oeuvre.date_parution)) 
+        AS date_parution
+        FROM oeuvre
+        JOIN auteur ON auteur.id_auteur = oeuvre.auteur_id
+        LEFT JOIN exemplaire AS E1 ON E1.oeuvre_id = oeuvre.id_oeuvre
+        LEFT JOIN exemplaire AS E2 ON E2.id_exemplaire = E1.id_exemplaire
+        AND E2.id_exemplaire
+        NOT IN (SELECT emprunt.exemplaire_id FROM emprunt WHERE emprunt.date_retour IS NULL)
+        WHERE oeuvre.id_oeuvre=%s
+        GROUP BY oeuvre.id_oeuvre, auteur.nom, oeuvre.titre
+        ORDER BY auteur.nom, oeuvre.titre; '''
     mycursor.execute(sql, tuple_delete)
     oeuvre = mycursor.fetchone()
     oeuvre_id = str(oeuvre['oeuvre_id'])

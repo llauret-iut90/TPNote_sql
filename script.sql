@@ -286,25 +286,25 @@ VALUES (6, 2, '2022-09-21', '2022-09-28'),
 # GROUP BY oeuvre.id_oeuvre, oeuvre.titre, oeuvre.date_parution, oeuvre.photo, auteur.nom
 # ORDER BY auteur.nom
 
-SELECT exemplaire.id_exemplaire,
-       exemplaire.date_achat,
-       exemplaire.etat,
-       exemplaire.oeuvre_id,
-       exemplaire.id_exemplaire,
-       oeuvre.date_parution,
-       exemplaire.prix,
-       COUNT(E1.id_exemplaire)                        AS ExemplaireDispo,
-       IF(E1.id_exemplaire IS NULL, 'abs', 'present') AS present
-FROM exemplaire
-         LEFT JOIN emprunt ON exemplaire.id_exemplaire = emprunt.exemplaire_id
-         INNER JOIN oeuvre ON oeuvre.id_oeuvre = exemplaire.oeuvre_id
-         LEFT JOIN exemplaire AS E1 ON E1.id_exemplaire = exemplaire.id_exemplaire
-    AND E1.id_exemplaire
-                                           NOT IN
-        (SELECT emprunt.exemplaire_id FROM emprunt WHERE emprunt.date_retour IS NULL)
-WHERE exemplaire.oeuvre_id = 1
-GROUP BY exemplaire.id_exemplaire, exemplaire.date_achat, exemplaire.etat, exemplaire.oeuvre_id,
-         exemplaire.id_exemplaire, oeuvre.date_parution, exemplaire.prix
+# SELECT exemplaire.id_exemplaire,
+#        exemplaire.date_achat,
+#        exemplaire.etat,
+#        exemplaire.oeuvre_id,
+#        exemplaire.id_exemplaire,
+#        oeuvre.date_parution,
+#        exemplaire.prix,
+#        COUNT(E1.id_exemplaire)                        AS ExemplaireDispo,
+#        IF(E1.id_exemplaire IS NULL, 'abs', 'present') AS present
+# FROM exemplaire
+#          LEFT JOIN emprunt ON exemplaire.id_exemplaire = emprunt.exemplaire_id
+#          INNER JOIN oeuvre ON oeuvre.id_oeuvre = exemplaire.oeuvre_id
+#          LEFT JOIN exemplaire AS E1 ON E1.id_exemplaire = exemplaire.id_exemplaire
+#     AND E1.id_exemplaire
+#                                            NOT IN
+#         (SELECT emprunt.exemplaire_id FROM emprunt WHERE emprunt.date_retour IS NULL)
+# WHERE exemplaire.oeuvre_id = 1
+# GROUP BY exemplaire.id_exemplaire, exemplaire.date_achat, exemplaire.etat, exemplaire.oeuvre_id,
+#          exemplaire.id_exemplaire, oeuvre.date_parution, exemplaire.prix
 
 # +--------------+-------+------------+-------+---------------------+----------+--------------+-----------------+---------+
 # | noExemplaire | etat  | date_achat | prix  | titre               | noOeuvre | dateParution | ExemplaireDispo | present |
