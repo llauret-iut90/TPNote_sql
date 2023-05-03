@@ -61,9 +61,6 @@ def add_exemplaire():
     id_oeuvre = request.args.get('id_oeuvre', '')
     mycursor = get_db().cursor()
     sql = ''' SELECT auteur.nom, oeuvre.titre, oeuvre.id_oeuvre, oeuvre.date_parution AS date_parution_iso
-        , COALESCE (oeuvre.photo, '') AS photo
-        , COUNT(E1.id_exemplaire) AS nb_exemplaire
-        , COUNT(E2.id_exemplaire) AS nb_exemp_dispo
         , CONCAT(LPAD(CAST(DAY(oeuvre.date_parution)AS CHAR(2)),2,0),'/',LPAD(MONTH(oeuvre.date_parution), 2, '0'),'/', YEAR(oeuvre.date_parution))
         AS date_parution
         FROM oeuvre
@@ -137,13 +134,13 @@ def delete_exemplaire():
     if not(oeuvre_id and oeuvre_id.isnumeric()):
         abort("404","erreur id_oeuvre")
     nb_emprunts = 0
-    sql = ''' SELECT 'requete4_7' FROM DUAL '''
+    sql = ''' SELECT COUNT(emprunt.exemplaire_id) AS nb_emprunts FROM emprunt WHERE emprunt.exemplaire_id=%s '''
     mycursor.execute(sql, tuple_delete)
     res_nb_emprunts = mycursor.fetchone()
     if 'nb_emprunts' in res_nb_emprunts.keys():
         nb_emprunts=res_nb_emprunts['nb_emprunts']
     if nb_emprunts == 0 :
-        sql = ''' SELECT 'requete4_8' FROM DUAL '''
+        sql = ''' DELETE FROM exemplaire WHERE id_exemplaire=%s'''
         mycursor.execute(sql, tuple_delete)
         get_db().commit()
         message=u'oeuvre supprimée, id: ' + id_exemplaire
@@ -157,10 +154,21 @@ def delete_exemplaire():
 def edit_exemplaire():
     mycursor = get_db().cursor()
     id_exemplaire = request.args.get('id_exemplaire', '')
-    sql = ''' SELECT 'requete4_10' FROM DUAL '''
+    sql = ''' SELECT oeuvre.date_parution '''
     mycursor.execute(sql, (id_exemplaire))
     oeuvre = mycursor.fetchone()
-    sql = ''' SELECT 'requete4_11' FROM DUAL '''
+    sql = ''' SELECT auteur.nom, oeuvre.titre, oeuvre.id_oeuvre, oeuvre.date_parution AS date_parution_iso, exemplaire.etat,
+        , CONCAT(LPAD(CAST(DAY(oeuvre.date_parution)AS CHAR(2)),2,0),'/',LPAD(MONTH(oeuvre.date_parution), 2, '0'),'/', YEAR(oeuvre.date_parution))
+        AS date_parution
+        FROM oeuvre
+        JOIN auteur ON auteur.id_auteur = oeuvre.auteur_id
+        LEFT JOIN exemplaire AS E1 ON E1.oeuvre_id = oeuvre.id_oeuvre
+        LEFT JOIN exemplaire AS E2 ON E2.id_exemplaire = E1.id_exemplaire
+        AND E2.id_exemplaire
+        NOT IN (SELECT emprunt.exemplaire_id FROM emprunt WHERE emprunt.date_retour IS NULL)
+        WHERE oeuvre.id_oeuvre=%s
+        GROUP BY oeuvre.id_oeuvre, auteur.nom, oeuvre.titre
+        ORDER BY auteur.nom, oeuvre.titre; '''
     mycursor.execute(sql, (id_exemplaire,))
     exemplaire = mycursor.fetchone()
     if exemplaire['date_achat']:
@@ -183,13 +191,13 @@ def valid_edit_exemplaire():
         date_achat = dto_data['date_achat_iso']
         tuple_update = (oeuvre_id, etat, date_achat, prix, id_exemplaire)
         print(tuple_update)
-        sql = ''' SELECT 'requete4_12' FROM DUAL '''
+        sql = ''' UPDATE exemplaire SET oeuvre_id=%s, etat=%s, date_achat=%s, prix=%s WHERE id_exemplaire=%s '''
         mycursor.execute(sql, tuple_update)
         get_db().commit()
         message=u' exemplaire modifié, id_exemplaire: ' + id_exemplaire
         flash(message, 'success radius')
         return redirect('/admin/exemplaire/show?id_oeuvre='+oeuvre_id)
-    sql = ''' SELECT 'requete4_10' FROM DUAL '''
+    sql = '''  '''
     mycursor.execute(sql, (oeuvre_id))
     oeuvre = mycursor.fetchone()
     return render_template('admin/exemplaire/edit_exemplaire.html', exemplaire=dto_data, oeuvre=oeuvre, erreurs=errors)
