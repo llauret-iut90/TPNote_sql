@@ -163,17 +163,7 @@ def edit_exemplaire():
     WHERE id_exemplaire=%s '''
     mycursor.execute(sql, (id_exemplaire))
     oeuvre = mycursor.fetchone()
-    sql = ''' SELECT exemplaire.id_exemplaire,
-       oeuvre.titre,
-       exemplaire.oeuvre_id,
-       exemplaire.etat,
-       exemplaire.date_achat,
-       exemplaire.prix
-FROM exemplaire
-         INNER JOIN oeuvre ON oeuvre.id_oeuvre = exemplaire.oeuvre_id
-WHERE exemplaire.id_exemplaire = %s
-GROUP BY exemplaire.id_exemplaire, exemplaire.date_achat, exemplaire.etat, exemplaire.oeuvre_id,
- exemplaire.prix; '''
+    sql = ''' SELECT * FROM exemplaire WHERE id_exemplaire=%s '''
     mycursor.execute(sql, (id_exemplaire,))
     exemplaire = mycursor.fetchone()
     if exemplaire['date_achat']:
@@ -204,7 +194,11 @@ def valid_edit_exemplaire():
         message = u' exemplaire modifié, id_exemplaire: ' + id_exemplaire
         flash(message, 'success radius')
         return redirect('/admin/exemplaire/show?id_oeuvre=' + oeuvre_id)
-    sql = '''  '''
+    sql = ''' SELECT id_exemplaire, oeuvre_id, etat, date_achat, prix, auteur.nom, oeuvre.titre 
+    FROM exemplaire
+    INNER JOIN oeuvre ON oeuvre.id_oeuvre = exemplaire.oeuvre_id
+    INNER JOIN auteur ON auteur.id_auteur = oeuvre.auteur_id
+    WHERE id_exemplaire=%s  '''
     mycursor.execute(sql, oeuvre_id)
     oeuvre = mycursor.fetchone()
     return render_template('admin/exemplaire/edit_exemplaire.html', exemplaire=dto_data, oeuvre=oeuvre, erreurs=errors)
