@@ -110,21 +110,6 @@ def delete_exemplaire():
     mycursor = get_db().cursor()
     id_exemplaire = request.args.get('id_exemplaire', '')
     tuple_delete = (id_exemplaire,)
-    # sql = ''' SELECT auteur.nom, oeuvre.titre, oeuvre.id_oeuvre, oeuvre.date_parution AS date_parution_iso
-    #         , COALESCE (oeuvre.photo, '') AS photo
-    #         , COUNT(E1.id_exemplaire) AS nb_exemplaire
-    #         , COUNT(E2.id_exemplaire) AS nb_exemp_dispo
-    #         , CONCAT(LPAD(CAST(DAY(oeuvre.date_parution)AS CHAR(2)),2,0),'/',LPAD(MONTH(oeuvre.date_parution), 2, '0'),'/', YEAR(oeuvre.date_parution))
-    #         AS date_parution
-    #         FROM oeuvre
-    #         JOIN auteur ON auteur.id_auteur = oeuvre.auteur_id
-    #         LEFT JOIN exemplaire AS E1 ON E1.oeuvre_id = oeuvre.id_oeuvre
-    #         LEFT JOIN exemplaire AS E2 ON E2.id_exemplaire = E1.id_exemplaire
-    #         AND E2.id_exemplaire
-    #         NOT IN (SELECT emprunt.exemplaire_id FROM emprunt WHERE emprunt.date_retour IS NULL)
-    #         WHERE oeuvre.id_oeuvre=%s
-    #         GROUP BY oeuvre.id_oeuvre, auteur.nom, oeuvre.titre
-    #         ORDER BY auteur.nom, oeuvre.titre; '''
     sql = '''
     SELECT oeuvre_id FROM exemplaire WHERE id_exemplaire =%s
     '''
