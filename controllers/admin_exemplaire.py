@@ -42,7 +42,7 @@ def show_exemplaire():
        oeuvre.date_parution,
        exemplaire.prix,
        COUNT(E1.id_exemplaire)                        AS ExemplaireDispo,
-       IF(COUNT(E1.id_exemplaire) IS NULL, 'abs', 'present') AS present
+       IF(E1.id_exemplaire IS NULL, 'abs', 'present') AS present
 FROM exemplaire
          LEFT JOIN emprunt ON exemplaire.id_exemplaire = emprunt.exemplaire_id
          INNER JOIN oeuvre ON oeuvre.id_oeuvre = exemplaire.oeuvre_id

@@ -15,11 +15,13 @@ def emprunt_select_adherent():
     mycursor = get_db().cursor()
     action = request.args.get('action', '')
     if action == 'emprunter':
+        # 5.1
         sql = ''' SELECT 'requete5_1' FROM DUAL '''
         mycursor.execute(sql)
         donnees_adherents = mycursor.fetchall()
         return render_template('admin/emprunt/select_adherent_emprunts.html', donnees_adherents=donnees_adherents, action=action, erreurs=[])
     if action == 'rendre':
+        # 5.2
         sql = ''' SELECT 'requete5_2' FROM DUAL '''
         mycursor.execute(sql)
         donnees_adherents = mycursor.fetchall()
@@ -37,6 +39,7 @@ def emprunt_emprunter():
     id_adherent = request.form.get('id_adherent', '')
     print(id_adherent)
     if id_adherent == '':
+        # 5.1
         sql = ''' SELECT 'requete5_1' FROM DUAL '''
         mycursor.execute(sql)
         donnees_adherents = mycursor.fetchall()
@@ -44,6 +47,7 @@ def emprunt_emprunter():
         return render_template('admin/emprunt/select_adherent_emprunts.html', donnees_adherents=donnees_adherents,
                                    action='emprunter', erreurs=erreurs)
 
+    # 5.3
     sql = ''' SELECT 'requete5_3' FROM DUAL '''
     mycursor.execute(sql, (id_adherent))
     nbr_emprunt = mycursor.fetchone()
@@ -56,20 +60,23 @@ def emprunt_emprunter():
         # traitement des erreurs
         tuple_isert = (id_adherent,id_exemplaire,date_emprunt)
         print(tuple_insert)
+        # 5.6
         sql = ''' SELECT 'requete5_6' FROM DUAL '''
         mycursor.execute(sql, tuple_isert)
         get_db().commit()
         nbr_emprunt['nbr_emprunt']=nbr_emprunt['nbr_emprunt']+1
 
+    # 5.7
     sql = ''' SELECT 'requete5_7' FROM DUAL '''
     mycursor.execute(sql,(id_adherent))
     donnees_adherent = mycursor.fetchone()
 
-
+    # 5.4
     sql = ''' SELECT 'requete5_4' FROM DUAL '''
     mycursor.execute(sql)
     liste_exemp_dispo = mycursor.fetchall()
 
+    # 5.5
     sql = ''' SELECT 'requete5_5' FROM DUAL '''
     mycursor.execute(sql, (id_adherent))
     donnees_emprunt = mycursor.fetchall()
@@ -90,6 +97,7 @@ def emprunt_rendre():
     mycursor = get_db().cursor()
     id_adherent = request.form.get('id_adherent', '')
     if id_adherent == '':
+        # 5.2
         sql = ''' SELECT 'requete5_2' FROM DUAL '''
         donnees_adherents = mycursor.fetchall()
         erreurs={'id_adherent': u'Selectionner un adhérent'}
@@ -105,16 +113,20 @@ def emprunt_rendre():
         # traitement des erreurs
         tuple_update = (date_retour, id_adherent,date_emprunt,id_exemplaire)
         print(tuple_update)
+        # 5.8
         sql = ''' SELECT 'requete5_8' FROM DUAL '''
         mycursor.execute(sql, tuple_update)
         get_db().commit()
 
+    # 5.7
     sql = ''' SELECT 'requete5_7' FROM DUAL '''
     mycursor.execute(sql,(id_adherent))
     donnees_adherent = mycursor.fetchone()
+    # 5.3
     sql = ''' SELECT 'requete5_3' FROM DUAL '''
     mycursor.execute(sql,(id_adherent))
     nbr_emprunts = mycursor.fetchone()
+    # 5.5
     sql = ''' SELECT 'requete5_5' FROM DUAL '''
     mycursor.execute(sql,(id_adherent))
     donnees_emprunts = mycursor.fetchall()
@@ -145,12 +157,14 @@ def delete_emprunt_valid():
             for elt in list_emprunts:
                 list_emprunts_split=elt.split('_')
                 print(list_emprunts_split)
+                # 5.9
                 sql = ''' SELECT 'requete5_9' FROM DUAL '''
                 mycursor.execute(sql, list_emprunts_split)
                 if len(mycursor.fetchall()) != 1:
                     message = u'emprunt à supprimé, PB , oeuvre_id :' + str(elt)
                     flash(message)
                     return redirect('/admin/emprunt/delete')
+                # 5.10
                 sql = ''' SELECT 'requete5_10' FROM DUAL '''
                 mycursor.execute(sql, list_emprunts_split)
                 get_db().commit()
@@ -159,6 +173,7 @@ def delete_emprunt_valid():
             return redirect('/admin/emprunt/delete?id_adherent=' + str(id_adherent))
         return redirect('/admin/emprunt/delete')
 
+    # 5.11
     sql = ''' SELECT 'requete5_11' FROM DUAL '''
     param=[]
     if id_adherent.isnumeric():
@@ -169,6 +184,7 @@ def delete_emprunt_valid():
     print(sql, param)
     mycursor.execute(sql, param)
     donnees = mycursor.fetchall()
+    # 5.12
     sql = ''' SELECT 'requete5_12' FROM DUAL '''
     mycursor.execute(sql)
     donnees_adherents = mycursor.fetchall()
@@ -182,6 +198,7 @@ def delete_emprunt_valid():
 @admin_emprunt.route('/admin/emprunt/bilan-retard', methods=['GET'])
 def bilan_emprunt():
     mycursor = get_db().cursor()
+    # 5.13
     sql = ''' SELECT 'requete5_13' FROM DUAL '''
     mycursor.execute(sql)
     donnees_bilan = mycursor.fetchall()
