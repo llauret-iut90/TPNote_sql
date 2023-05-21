@@ -197,143 +197,106 @@ VALUES (6, 2, '2022-09-21', '2022-09-28'),
        (9, 15, '2023-02-22', NULL),
        (9, 18, '2023-01-30', NULL);
 
+# SELECT emprunt.adherent_id,
+#        adherent.nom,
+#        adherent.date_paiement,
+#        group_concat(emprunt.date_emprunt) AS date_emprunt,
+#        group_concat(emprunt.date_retour) AS liste_retour,
+#        COUNT(emprunt.adherent_id) AS nbrEmprunt,
+#        IF(adherent.date_paiement +1 > NOW(), 'A JOUR', 'EN RETARD') AS retardCotisation,
+#        group_concat(IF(adherent.date_paiement +1 > NOW(), 'A JOUR', 'EN RETARD')) AS listeRetard,
+#        COUNT(IF(adherent.date_paiement +1 > NOW(), 'A JOUR', 'EN RETARD')) AS nbreRetard
+# FROM emprunt
+# INNER JOIN adherent ON emprunt.adherent_id = adherent.id_adherent
+# WHERE adherent.date_paiement +1 > NOW()
+# GROUP BY adherent.id_adherent, adherent.nom, adherent.date_paiement
+# HAVING COUNT(emprunt.adherent_id) > 6
+# ORDER BY adherent.nom
 
+SELECT adherent.id_adherent                                                                      AS id,
+       adherent.nom,
+       adherent.date_paiement,
+       GROUP_CONCAT(emprunt.date_emprunt SEPARATOR ',')                                          AS liste_emprunt,
+       GROUP_CONCAT(emprunt.date_retour SEPARATOR ',')                                           AS liste_retour,
+       COUNT(DISTINCT emprunt.exemplaire_id)                                                     AS nbrEmprunt,
+       CASE WHEN adherent.date_paiement < DATE_SUB(CURDATE(), INTERVAL 1 YEAR) THEN 1 ELSE 0 END AS retardCotisation,
+       GROUP_CONCAT(CASE
+                        WHEN emprunt.date_retour IS NULL AND DATEDIFF(CURDATE(), emprunt.date_emprunt) > 90 THEN 1
+                        ELSE 0 END SEPARATOR ',')                                                AS listeRetard,
+       SUM(CASE
+               WHEN emprunt.date_retour IS NULL AND DATEDIFF(CURDATE(), emprunt.date_emprunt) > 90 THEN 1
+               ELSE 0 END)                                                                       AS nbreRetard
+FROM adherent
+         LEFT JOIN
+     emprunt ON adherent.id_adherent = emprunt.adherent_id
+GROUP BY adherent.id_adherent, adherent.nom, adherent.date_paiement
+HAVING adherent.date_paiement >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+   AND COUNT(DISTINCT emprunt.exemplaire_id) < 6
+   AND SUM(CASE WHEN emprunt.date_retour IS NULL AND DATEDIFF(CURDATE(), emprunt.date_emprunt) > 90 THEN 1 ELSE 0 END) =
+       0
+ORDER BY adherent.nom;
 
-# SELECT * FROM oeuvre;
+SELECT *
+FROM  emprunt
 
-# SELECT exemplaire.id_exemplaire AS noExemplaire, exemplaire.date_achat, exemplaire.etat, exemplaire.oeuvre_id, exemplaire.id_exemplaire, oeuvre.date_parution, exemplaire.prix
-#     FROM exemplaire
-#     LEFT JOIN emprunt ON exemplaire.id_exemplaire=emprunt.exemplaire_id
-#     INNER JOIN oeuvre ON oeuvre.id_oeuvre=exemplaire.oeuvre_id
-#     WHERE oeuvre_id=14
-
-# SELECT oeuvre.id_oeuvre,
-#        oeuvre.titre,
-#        DATE_FORMAT(oeuvre.date_parution, '%d/%m/%Y') AS date_parution,
-#        oeuvre.photo,
-#        auteur.nom,
-#        COUNT(exemplaire.id_exemplaire)               AS nbExemplaire,
-#        COUNT(E2.id_exemplaire)                       AS nb_exemp_dispo
-# FROM oeuvre
-#          INNER JOIN auteur ON oeuvre.auteur_id = auteur.id_auteur
-#          LEFT JOIN exemplaire ON oeuvre.id_oeuvre = exemplaire.oeuvre_id
-#          LEFT JOIN emprunt ON exemplaire.id_exemplaire = emprunt.exemplaire_id
-#          LEFT JOIN exemplaire AS E2 ON E2.id_exemplaire = exemplaire.id_exemplaire
-#     AND E2.id_exemplaire NOT IN (SELECT emprunt.exemplaire_id FROM emprunt WHERE emprunt.date_retour IS NULL)
-# GROUP BY oeuvre.id_oeuvre, oeuvre.titre, oeuvre.date_parution, oeuvre.photo, auteur.nom
-# ORDER BY auteur.nom
-
-# SELECT oeuvre.id_oeuvre AS noOeuvre,
-#        oeuvre.titre,
-#        oeuvre.date_parution,
-#        oeuvre.photo,
-#        auteur.nom,
-#        COUNT(exemplaire.id_exemplaire)               AS nb_exemplaire,
-#        COUNT(E2.id_exemplaire)                       AS nb_exemp_dispo
-# FROM oeuvre
-#          INNER JOIN auteur ON oeuvre.auteur_id = auteur.id_auteur
-#          LEFT JOIN exemplaire ON oeuvre.id_oeuvre = exemplaire.oeuvre_id
-#          LEFT JOIN exemplaire AS E2 ON E2.id_exemplaire = exemplaire.id_exemplaire
-#     AND E2.id_exemplaire NOT IN (SELECT emprunt.exemplaire_id FROM emprunt WHERE emprunt.date_retour IS NULL)
-# WHERE exemplaire.oeuvre_id = 1
-# GROUP BY oeuvre.id_oeuvre, oeuvre.titre, oeuvre.date_parution, oeuvre.photo, auteur.nom
-# ORDER BY auteur.nom;
-
-# SELECT oeuvre.id_oeuvre AS noOeuvre, oeuvre.titre, oeuvre.date_parution, oeuvre.photo, auteur.nom, COUNT(exemplaire.id_exemplaire) AS nb_exemplaire, COUNT(emprunt.date_retour) AS nb_exemp_dispo
-#     FROM oeuvre
-#     INNER JOIN auteur ON oeuvre.auteur_id=auteur.id_auteur
-#     INNER JOIN exemplaire ON oeuvre.id_oeuvre=exemplaire.oeuvre_id
-#     LEFT JOIN emprunt ON exemplaire.id_exemplaire=emprunt.exemplaire_id
-#     WHERE exemplaire.oeuvre_id=%s
+# Requête 5_1 : les adhérents ayant le droit d’emprunter un livre
+# Liste des adhérents qui peuvent emprunter un exemplaire : (find_adherents_emprunter)
+# Condition pour emprunter un livre (exemplaire) :
 #
+#     l’adhérent est à jour dans sa cotisation (la “date_paiement” + 1 an est supérieure à la date d’aujourd’hui )
+#     l’adhérent a emprunté moins de 6 documents (exemplaires)
+#     l’adhérent n’a pas d’exemplaire emprunté et non rendu en retard (un adhérent ne peut conserver que 90 jours un livre (exemplaire), après 90 jours si l’adhérent n’a pas rendu un livre, il ne peut plus emprunter de livre.)
+
+# Trier les adhérents par nom
+# exemple de résultat
+
+# +----+-----------+---------------+--------------------------------------------------------+--------------------------------------------------------+------------+------------------+-------------+------------+
+# | id | nom       | date_paiement | group_concat(empr.date_emprunt)                        | liste_retour                                           | nbrEmprunt | retardCotisation | listeRetard | nbreRetard |
+# +----+-----------+---------------+--------------------------------------------------------+--------------------------------------------------------+------------+------------------+-------------+------------+
+# |  8 | asproitis | 2022-12-04    | NULL                                                   | NULL                                                   |          0 |                0 | 0           |          0 |
+# |  1 | billot    | 2022-11-03    | NULL                                                   | NULL                                                   |          0 |                0 | 0           |          0 |
+# |  6 | cambot    | 2022-12-15    | NULL                                                   | NULL                                                   |          0 |                0 | 0           |          0 |
+# | 10 | dupont    | 2022-03-14    | NULL                                                   | NULL                                                   |          0 |                0 | 0           |          0 |
+# | 11 | durant    | 2022-12-16    | NULL                                                   | NULL                                                   |          0 |                0 | 0           |          0 |
+# |  2 | lauvernay | 2022-06-13    | 2022-12-01,2022-12-15,2022-12-30,2023-02-26,2023-02-11 | 2022-12-01,2022-12-15,2022-12-30,2023-02-26,2023-02-11 |          5 |                0 | 0,0,0,0,0   |          0 |
+# |  9 | pereira   | 2022-11-03    | 2023-02-22,2023-01-30                                  | 2023-02-22,2023-01-30                                  |          2 |                0 | 0,0         |          0 |
+# | 12 | piton     | 2022-11-03    | NULL                                                   | NULL                                                   |          0 |                0 | 0           |          0 |
+# +----+-----------+---------------+--------------------------------------------------------+--------------------------------------------------------+------------+------------------+-------------+------------+
+
+# SELECT DISTINCT(adherent.id_adherent), adherent.nom
+# FROM adherent
+# INNER JOIN emprunt ON adherent.id_adherent = emprunt.adherent_id
 #
-# SELECT *
-# FROM exemplaire;
+# SELECT DISTINCT adherents.id_adherent, adherents.nom
+# FROM adherent adherents
+# JOIN emprunt emprunts ON adherents.id_adherent = emprunts.adherent_id
+# JOIN exemplaire exemplaires ON emprunts.exemplaire_id = exemplaires.id_exemplaire
+# WHERE exemplaires.date_achat = 0
+# ORDER BY adherents.nom;
+
+# Select DISTINCT(adherent.id_adherent), adherent.nom
+# FROM adherent
+# INNER JOIN emprunt ON adherent.id_adherent = emprunt.adherent_id
+# WHERE emprunt.date_retour IS NULL
+# ORDER BY adherent.nom;
 #
-# SELECT COUNT(exemplaire.id_exemplaire) AS nb_exemplaire FROM exemplaire WHERE oeuvre_id=1
+# SELECT COUNT(emprunt.exemplaire_id) AS nbrEmprunt, COUNT((CASE
+#                WHEN emprunt.date_retour IS NULL AND DATEDIFF(CURDATE(), emprunt.date_emprunt) > 90 THEN 1
+#                ELSE 0 END) ) AS retard
+# FROM emprunt
+# WHERE emprunt.adherent_id = 7;
 
-
--- A changer dans le code
-# SELECT auteur.nom, oeuvre.titre, oeuvre.id_oeuvre, oeuvre.date_parution AS date_parution_iso
-#         , COALESCE (oeuvre.photo, '') AS photo
-#         , COUNT(E1.id_exemplaire) AS nb_exemplaire
-#         , COUNT(E2.id_exemplaire) AS nb_exemp_dispo
-#         , CONCAT(LPAD(CAST(DAY(oeuvre.date_parution)AS CHAR(2)),2,0),'/',LPAD(MONTH(oeuvre.date_parution), 2, '0'),'/', YEAR(oeuvre.date_parution))
-#         AS date_parution
-#         FROM oeuvre
-#         JOIN auteur ON auteur.id_auteur = oeuvre.auteur_id
-#         LEFT JOIN exemplaire AS E1 ON E1.oeuvre_id = oeuvre.id_oeuvre
-#         LEFT JOIN exemplaire AS E2 ON E2.id_exemplaire = E1.id_exemplaire
-#         AND E2.id_exemplaire
-#         NOT IN (SELECT emprunt.exemplaire_id FROM emprunt WHERE emprunt.date_retour IS NULL)
-#         WHERE oeuvre.id_oeuvre=%s
-#         GROUP BY oeuvre.id_oeuvre, auteur.nom, oeuvre.titre
-#         ORDER BY auteur.nom ASC, oeuvre.titre ASC;
+# SELECT COUNT(*)                                                                        AS nbrEmprunt,
+#        SUM(CASE WHEN DATEDIFF(CURDATE(), emprunt.date_emprunt) > 90 THEN 1 ELSE 0 END) AS retard
+# FROM adherent
+#          JOIN
+#      emprunt ON adherent.id_adherent = emprunt.adherent_id
+# WHERE adherent.id_adherent = 4;
 #
-# -- ancien
-# SELECT oeuvre.id_oeuvre,
-#        oeuvre.titre,
-#        DATE_FORMAT(oeuvre.date_parution, '%d/%m/%Y') AS date_parution,
-#        oeuvre.photo,
-#        auteur.nom,
-#        COUNT(exemplaire.id_exemplaire)               AS nb_exemplaire,
-#        COUNT(E2.id_exemplaire)                       AS nb_exemp_dispo
-# FROM oeuvre
-#          INNER JOIN auteur ON oeuvre.auteur_id = auteur.id_auteur
-#          LEFT JOIN exemplaire ON oeuvre.id_oeuvre = exemplaire.oeuvre_id
-#          LEFT JOIN exemplaire AS E2 ON E2.id_exemplaire = exemplaire.id_exemplaire
-#     AND E2.id_exemplaire NOT IN (SELECT emprunt.exemplaire_id FROM emprunt WHERE emprunt.date_retour IS NULL)
-# GROUP BY oeuvre.id_oeuvre, oeuvre.titre, oeuvre.date_parution, oeuvre.photo, auteur.nom
-# ORDER BY auteur.nom
-
-# SELECT exemplaire.id_exemplaire,
-#        exemplaire.date_achat,
-#        exemplaire.etat,
-#        exemplaire.oeuvre_id,
-#        exemplaire.id_exemplaire,
-#        oeuvre.date_parution,
-#        exemplaire.prix,
-#        COUNT(E1.id_exemplaire)                        AS ExemplaireDispo,
-#        IF(E1.id_exemplaire IS NULL, 'abs', 'present') AS present
-# FROM exemplaire
-#          LEFT JOIN emprunt ON exemplaire.id_exemplaire = emprunt.exemplaire_id
-#          INNER JOIN oeuvre ON oeuvre.id_oeuvre = exemplaire.oeuvre_id
-#          LEFT JOIN exemplaire AS E1 ON E1.id_exemplaire = exemplaire.id_exemplaire
-#     AND E1.id_exemplaire
-#                                            NOT IN
-#         (SELECT emprunt.exemplaire_id FROM emprunt WHERE emprunt.date_retour IS NULL)
-# WHERE exemplaire.oeuvre_id = 1
-# GROUP BY exemplaire.id_exemplaire, exemplaire.date_achat, exemplaire.etat, exemplaire.oeuvre_id,
-#          exemplaire.id_exemplaire, oeuvre.date_parution, exemplaire.prix
-
-# +--------------+-------+------------+-------+---------------------+----------+--------------+-----------------+---------+
-# | noExemplaire | etat  | date_achat | prix  | titre               | noOeuvre | dateParution | ExemplaireDispo | present |
-# +--------------+-------+------------+-------+---------------------+----------+--------------+-----------------+---------+
-# |            2 | MOYEN | 2015-09-28 | 12.50 | le retour de Poirot |        1 | 1960-02-12   |               2 | present |
-# |            1 | BON   | 2022-08-25 | 13.50 | le retour de Poirot |        1 | 1960-02-12   |               1 | present |
-# |            4 | BON   | 2015-01-11 | 10.00 | le retour de Poirot |        1 | 1960-02-12   |            NULL | abs     |
-# |            3 | MOYEN | 2022-05-26 | 12.00 | le retour de Poirot |        1 | 1960-02-12   |            NULL | abs     |
-# +--------------+-------+------------+-------+---------------------+----------+--------------+-----------------+---------+
-
-# SELECT exemplaire.id_exemplaire,
-#        oeuvre.titre,
-#        oeuvre.id_oeuvre,
-#        exemplaire.date_achat,
-#        exemplaire.etat,
-#        exemplaire.oeuvre_id,
-#        exemplaire.id_exemplaire,
-#        oeuvre.date_parution,
-#        exemplaire.prix,
-#        COUNT(E1.id_exemplaire)                        AS ExemplaireDispo,
-#        IF(COUNT(E1.id_exemplaire) IS NULL, 'abs', 'present') AS present
-# FROM exemplaire
-#          LEFT JOIN emprunt ON exemplaire.id_exemplaire = emprunt.exemplaire_id
-#          INNER JOIN oeuvre ON oeuvre.id_oeuvre = exemplaire.oeuvre_id
-#          LEFT JOIN exemplaire AS E1 ON E1.id_exemplaire = exemplaire.id_exemplaire
-#     AND E1.id_exemplaire
-#                                            NOT IN
-#         (SELECT emprunt.exemplaire_id FROM emprunt WHERE emprunt.date_retour IS NULL)
-# WHERE exemplaire.id_exemplaire = 45
-# GROUP BY exemplaire.id_exemplaire, exemplaire.date_achat, exemplaire.etat, exemplaire.oeuvre_id,
-#          exemplaire.id_exemplaire, oeuvre.date_parution, exemplaire.prix;
+# SELECT DISTINCT adherent.id_adherent, adherent.nom
+# FROM adherent
+#          JOIN emprunt ON emprunt.adherent_id = adherent.id_adherent
+#          JOIN exemplaire ON exemplaire.id_exemplaire = emprunt.exemplaire_id
+# WHERE emprunt.date_retour IS NULL
+# ORDER BY adherent.nom;
 
